@@ -2,10 +2,15 @@ package com.example.orgs.ui.recyclerview.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.orgs.databinding.ProdutoItemBinding
+import com.example.orgs.extensions.tentaCarregarImagem
 import com.example.orgs.model.Produto
+import java.math.BigDecimal
+import java.text.NumberFormat
+import java.util.*
 
 class ListaProdutosAdapter(
     private val context: Context,
@@ -14,16 +19,33 @@ class ListaProdutosAdapter(
 
     private val produtos = produtos.toMutableList()
 
-    class ViewHolder(binding: ProdutoItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
-        val nome = binding.produtoItemNome
-        val descricao = binding.produtoItemDescricao
-        val valor = binding.produtoItemValor
+    class ViewHolder(private val binding: ProdutoItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun vincula(produto: Produto) {
+
+            val nome = binding.produtoItemNome
             nome.text = produto.nome
+            val descricao = binding.produtoItemDescricao
             descricao.text = produto.descricao
-            valor.text = produto.valor.toPlainString()
+            val valor = binding.produtoItemValor
+            val valorEmMoeda: String = formataParaMoedaBrasileira(produto.valor)
+            valor.text = valorEmMoeda
+
+            val visibilidade = if (produto.imagem != null) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
+            binding.imageView.visibility = visibilidade
+            
+            binding.imageView.tentaCarregarImagem(produto.imagem)
+        }
+
+        private fun formataParaMoedaBrasileira(valor: BigDecimal): String {
+            val formatador: NumberFormat = NumberFormat
+                .getCurrencyInstance(Locale("pt", "br"))
+            return formatador.format(valor)
         }
     }
 
