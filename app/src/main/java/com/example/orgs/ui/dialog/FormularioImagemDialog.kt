@@ -28,6 +28,6 @@ class FormularioImagemDialog(private val context: Context) {
                         quandoImagemCarregada(url)
                     }.setNegativeButton("Cancelar") { _, _ ->
                     }.show()
-            }
+        }
     }
 }

@@ -8,55 +8,70 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.orgs.databinding.ProdutoItemBinding
 import com.example.orgs.extensions.tentaCarregarImagem
 import com.example.orgs.model.Produto
+import com.example.orgs.shared.FormataParaMoedaBrasileira.Companion.formataParaMoedaBrasileira
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.*
 
 class ListaProdutosAdapter(
     private val context: Context,
-    produtos: List<Produto>
+    produtos: List<Produto>,
+    var quandoClicaNoItem: (produto: Produto) -> Unit = {}
 ) : RecyclerView.Adapter<ListaProdutosAdapter.ViewHolder>() {
 
     private val produtos = produtos.toMutableList()
 
-    class ViewHolder(private val binding: ProdutoItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: ProdutoItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-        fun vincula(produto: Produto) {
+        private lateinit var produto: Produto
 
-            val nome = binding.produtoItemNome
-            nome.text = produto.nome
-            val descricao = binding.produtoItemDescricao
-            descricao.text = produto.descricao
-            val valor = binding.produtoItemValor
-            val valorEmMoeda: String = formataParaMoedaBrasileira(produto.valor)
-            valor.text = valorEmMoeda
+        init {
+            binding.produtoItemCard.setOnClickListener {
+                if (::produto.isInitialized) {
+                    quandoClicaNoItem(produto)
+                }
+            }
+        }
 
-            val visibilidade = if (produto.imagem != null) {
+        fun vincula(produto: Produto, context: Context) {
+            this.produto = produto
+
+            val nome = produto.nome
+            val descricao = produto.descricao
+            val valor = produto.valor
+            val imagem = produto.imagem
+
+            val itemNome = binding.produtoItemNome
+            itemNome.text = nome
+            val itemDescricao = binding.produtoItemDescricao
+            itemDescricao.text = descricao
+            val itemValor = binding.produtoItemValor
+            val valorEmMoeda: String = formataParaMoedaBrasileira(valor)
+            itemValor.text = valorEmMoeda
+
+            val visibilidade = if (imagem != null) {
                 View.VISIBLE
             } else {
                 View.GONE
             }
 
             binding.imageView.visibility = visibilidade
-            
-            binding.imageView.tentaCarregarImagem(produto.imagem)
-        }
 
-        private fun formataParaMoedaBrasileira(valor: BigDecimal): String {
-            val formatador: NumberFormat = NumberFormat
-                .getCurrencyInstance(Locale("pt", "br"))
-            return formatador.format(valor)
+            binding.imageView.tentaCarregarImagem(imagem)
         }
     }
 
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ProdutoItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        val inflater = LayoutInflater.from(context)
+        val binding = ProdutoItemBinding.inflate(inflater, parent, false)
         return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val produto = produtos[position]
-        holder.vincula(produto)
+        holder.vincula(produto, context)
     }
 
     override fun getItemCount(): Int = produtos.size
@@ -66,5 +81,4 @@ class ListaProdutosAdapter(
         this.produtos.addAll(produtos)
         notifyDataSetChanged()
     }
-
 }

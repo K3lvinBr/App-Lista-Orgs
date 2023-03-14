@@ -11,12 +11,12 @@ class ListaProdutosActivity : AppCompatActivity() {
 
     val dao = ProdutosDao()
     private val adapter = ListaProdutosAdapter(context = this, produtos = dao.buscaTodos())
-    private val binding by lazy {
-        ActivityListaProdutosBinding.inflate(layoutInflater)
-    }
+    private lateinit var binding: ActivityListaProdutosBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityListaProdutosBinding.inflate(layoutInflater)
         setContentView(binding.root)
         configuraRecyclerView()
         configuraFab()
@@ -42,5 +42,11 @@ class ListaProdutosActivity : AppCompatActivity() {
     private fun configuraRecyclerView() {
         val recyclerView = binding.activityListaProdutoRecyclerView
         recyclerView.adapter = adapter
+        adapter.quandoClicaNoItem = {
+            val intent = Intent(this, DetalhesActivity::class.java).apply {
+                putExtra("CHAVE_DETALHES", it)
+            }
+            startActivity(intent)
+        }
     }
 }
